@@ -16,3 +16,13 @@ class BookForm(forms.ModelForm):
                 "required": "The title is mandatory"
             }
         }
+    
+    # BUG FIX: Added clean() method - the form was missing validation for read_date vs published_date
+    # Without this, the validation only happens at model level after save, not during form validation
+    def clean(self):
+        super().clean()
+        read_date = self.cleaned_data.get('read_date')
+        published_date = self.cleaned_data.get('published_date')
+        
+        if read_date and published_date and read_date < published_date:
+            self.add_error('read_date', 'The read date must be after the published date')

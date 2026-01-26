@@ -14,7 +14,8 @@ class Book(models.Model):
         ('FI', 'Finished')
     ]
     title = models.CharField(max_length=50)
-    pages = models.IntegerField(validators=[MinValueValidator(0)])
+    # BUG FIX: Changed MinValueValidator(0) to MinValueValidator(1) - pages must be at least 1
+    pages = models.IntegerField(validators=[MinValueValidator(1)])
     rating = models.IntegerField(
         null=True,
         blank=True,
@@ -31,7 +32,8 @@ class Book(models.Model):
 
     def clean(self):
         super().clean()
-        if self.read_date and self.read_date > self.published_date:
+        # BUG FIX: Changed > to < - read_date must be AFTER published_date (greater, not less)
+        if self.read_date and self.read_date < self.published_date:
             raise ValidationError({"read_date": "The read date must be after the published date"})
 
     def __str__(self):
