@@ -1,23 +1,60 @@
 {% extends 'bookapp/layout.html' %}
 
 {% block content %}
-        <ul>
-            {% for book in books %}
-                <li>{{book.title}}</li>
-                {% if user.is_authenticated %}
-                <a href="{% url 'book_detail' book.pk %}">Details</a>
-                {% endif %}
-                {% if perms.bookapp.change_book %}
-                <a href="{% url 'book_edit' book.pk %}">Edit</a>
-                {% endif %}
-                {% if perms.bookapp.delete_book %}
-                <a href="{% url 'book_delete' book.pk %}">Delete</a>
-                {% endif %}
-            {% empty %}
-                There are no books
-            {% endfor %}
-        </ul>
-        {% if perms.bookapp.add_book %}
-        <a href="{% url 'form' %}">New book</a>
-        {% endif %}
-{% endblock content %}
+<h2>Book List</h2>
+
+<a href="{% url 'stats' %}">📊 Statistics</a>
+
+<!-- Filtro por título -->
+<form method="get" action="">
+  <input type="hidden" name="order_by" value="{{ order_by }}">
+  <input type="text" name="title" value="{{ title_filter }}" placeholder="Filter by title...">
+  <button type="submit">Filter</button>
+  <a href="{% url 'book_list' %}">Clear</a>
+</form>
+
+<!-- Tabla -->
+<table border="1" cellpadding="6" cellspacing="0">
+  <thead>
+    <tr>
+      <th><a href="?title={{ title_filter }}&order_by={% if order_by == 'title' %}-title{% else %}title{% endif %}">Title</a></th>
+      <th><a href="?title={{ title_filter }}&order_by={% if order_by == 'pages' %}-pages{% else %}pages{% endif %}">Pages</a></th>
+      <th><a href="?title={{ title_filter }}&order_by={% if order_by == 'rating' %}-rating{% else %}rating{% endif %}">Rating</a></th>
+      <th><a href="?title={{ title_filter }}&order_by={% if order_by == 'status' %}-status{% else %}status{% endif %}">Status</a></th>
+      <th><a href="?title={{ title_filter }}&order_by={% if order_by == 'published_date' %}-published_date{% else %}published_date{% endif %}">Published</a></th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for book in page_obj %}
+    <tr>
+      <td>{{ book.title }}</td>
+      <td>{{ book.pages }}</td>
+      <td>{{ book.rating|default:"-" }}</td>
+      <td>{{ book.get_status_display }}</td>
+      <td>{{ book.published_date }}</td>
+      <td>
+        <a href="{% url 'book_detail' book.pk %}">View</a>
+        <a href="{% url 'book_edit' book.pk %}">Edit</a>
+        <a href="{% url 'book_delete' book.pk %}">Delete</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6">No books found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Paginación -->
+<div>
+  {% if page_obj.has_previous %}
+    <a href="?title={{ title_filter }}&order_by={{ order_by }}&page={{ page_obj.previous_page_number }}">← Previous</a>
+  {% endif %}
+
+  Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+
+  {% if page_obj.has_next %}
+    <a href="?title={{ title_filter }}&order_by={{ order_by }}&page={{ page_obj.next_page_number }}">Next →</a>
+  {% endif %}
+</div>
+{% endblock %}

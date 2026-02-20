@@ -1,0 +1,61 @@
+{% extends 'bookapp/layout.html' %}
+
+{% block content %}
+<h2>Statistics</h2>
+
+<ul>
+  <li><strong>Book with most pages:</strong> {{ max_pages }} ({{ max_pages.pages }} pages)</li>
+  <li><strong>Book with least pages:</strong> {{ min_pages }} ({{ min_pages.pages }} pages)</li>
+  <li><strong>Average pages:</strong> {{ avg_pages }}</li>
+  <li><strong>Average rating:</strong> {{ avg_rating }}</li>
+</ul>
+
+<div style="display:flex; gap:40px; flex-wrap:wrap;">
+  <!-- Tarta: libros por status -->
+  <div style="max-width:400px;">
+    <h3>Books by Status</h3>
+    <canvas id="statusChart"></canvas>
+  </div>
+
+  <!-- Barras: libros por rating -->
+  <div style="max-width:400px;">
+    <h3>Books by Rating</h3>
+    <canvas id="ratingChart"></canvas>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const statusLabels = {{ status_labels|safe }};
+  const statusCounts = {{ status_counts|safe }};
+  const ratingLabels = {{ rating_labels|safe }};
+  const ratingCounts = {{ rating_counts|safe }};
+
+  new Chart(document.getElementById('statusChart'), {
+    type: 'pie',
+    data: {
+      labels: statusLabels,
+      datasets: [{
+        label: 'Books by Status',
+        data: statusCounts,
+      }]
+    }
+  });
+
+  new Chart(document.getElementById('ratingChart'), {
+    type: 'bar',
+    data: {
+      labels: ratingLabels,
+      datasets: [{
+        label: 'Number of Books',
+        data: ratingCounts,
+      }]
+    },
+    options: {
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+      }
+    }
+  });
+</script>
+{% endblock %}
